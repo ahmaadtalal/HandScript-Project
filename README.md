@@ -1,11 +1,11 @@
 # HandScript: Deep Learning Handwriting Generation System
 
-[![Live Demo](https://img.shields.io/badge/Live_Demo-Hosted_on_Render-success)](#) *(Insert your Render link here)*
+[![Live Demo](https://img.shields.io/badge/Live_Demo-Hosted_on_Render-success)](https://handscript-project.onrender.com/)
 [![GitHub Repo](https://img.shields.io/badge/GitHub-Repository-blue)](https://github.com/ahmaadtalal/HandScript-Project)
 
-**Institution:** Military College of Signals, NUST  
-**Course:** Deep Learning (CS-405) Lab Project  
-**Developers:** Rafay Ali Shah, Mohad Saeed Hashmi, Ahmed Talal Sajid  
+**Institution:** Military College of Signals, NUST[cite: 1]  
+**Course:** Deep Learning (CS-405) Lab Project[cite: 1]  
+**Developers:** Rafay Ali Shah, Mohad Saeed Hashmi, Ahmed Talal Sajid[cite: 1]
 
 ---
 
