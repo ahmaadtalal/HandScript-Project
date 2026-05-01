@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Handwriting Generator — MCS NUST</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --navy: #14145a;
+      --navy-mid: #1e3a8a;
+      --ink: #14145a;
+      --paper: #fefcf7;
+      --paper-shadow: #f0ede3;
+      --gold: #c9a84c;
+      --text: #2d2d2d;
+      --muted: #888;
+      --bg: #1a1a2e;
+    }
+
+    body {
+      font-family: 'Lato', sans-serif;
+      background: var(--bg);
+      min-height: 100vh;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 0 0 80px;
+    }
+
+    /* ---- HEADER ---- */
+    header {
+      width: 100%;
+      background: linear-gradient(135deg, #0f0f2d 0%, #1a1a4e 100%);
+      border-bottom: 2px solid var(--gold);
+      padding: 28px 40px 20px;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 4px 30px rgba(0,0,0,0.4);
+    }
+    .logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: white;
+      letter-spacing: 0.02em;
+    }
+    .logo span { color: var(--gold); }
+    .subtitle {
+      font-size: 0.75rem;
+      color: rgba(255,255,255,0.45);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-top: 2px;
+    }
+    .header-badge {
+      margin-left: auto;
+      background: rgba(201,168,76,0.15);
+      border: 1px solid rgba(201,168,76,0.4);
+      color: var(--gold);
+      font-size: 0.7rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 4px 12px;
+      border-radius: 20px;
+    }
+
+    /* ---- MAIN LAYOUT ---- */
+    .main {
+      display: grid;
+      grid-template-columns: 380px 1fr;
+      gap: 32px;
+      max-width: 1400px;
+      width: 100%;
+      padding: 40px 32px 0;
+      align-items: start;
+    }
+
+    /* ---- CONTROLS PANEL ---- */
+    .panel {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 16px;
+      padding: 28px;
+      position: sticky;
+      top: 100px;
+    }
+    .panel-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.1rem;
+      color: var(--gold);
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .panel-title::before {
+      content: '';
+      display: inline-block;
+      width: 4px;
+      height: 18px;
+      background: var(--gold);
+      border-radius: 2px;
+    }
+    label {
+      display: block;
+      font-size: 0.72rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.5);
+      margin-bottom: 8px;
+    }
+    textarea {
+      width: 100%;
+      height: 200px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 10px;
+      color: white;
+      font-family: 'Lato', sans-serif;
+      font-size: 0.95rem;
+      line-height: 1.6;
+      padding: 14px;
+      resize: vertical;
+      transition: border-color 0.2s;
+      outline: none;
+    }
+    textarea:focus { border-color: var(--gold); }
+
+    .options-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-top: 18px;
+    }
+    .option-group label { margin-bottom: 6px; }
+    
+    /* DROPDOWN FIXES */
+    select {
+      width: 100%;
+      background-color: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 8px;
+      color: white;
+      padding: 8px 12px;
+      font-size: 0.88rem;
+      outline: none;
+      cursor: pointer;
+      appearance: none;
+      -webkit-appearance: none;
+      background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='gold' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+      background-repeat: no-repeat;
+      background-position: right 10px center;
+      background-size: 1em;
+      padding-right: 30px;
+    }
+    select option {
+      background: #1a1a2e;
+      color: white;
+      padding: 10px;
+    }
+
+    input[type=range] {
+      width: 100%;
+      background: rgba(255,255,255,0.06);
+      border: none;
+      border-radius: 8px;
+      padding: 4px 0;
+      accent-color: var(--gold);
+      outline: none;
+      cursor: pointer;
+    }
+    .range-val {
+      text-align: right;
+      font-size: 0.75rem;
+      color: var(--gold);
+      margin-top: 2px;
+    }
+
+    .btn-generate {
+      width: 100%;
+      margin-top: 22px;
+      padding: 14px;
+      background: linear-gradient(135deg, var(--navy-mid), var(--navy));
+      border: 1px solid var(--gold);
+      border-radius: 10px;
+      color: white;
+      font-family: 'Playfair Display', serif;
+      font-size: 1rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+    .btn-generate:hover { background: linear-gradient(135deg, #2a4fa8, #1a2a7a); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(20,20,90,0.5); }
+    .btn-generate:active { transform: translateY(0); }
+    .btn-generate.loading { opacity: 0.7; cursor: wait; }
+
+    .pen-icon { font-size: 1.1rem; }
+    
+    @keyframes writing {
+      0%, 100% { transform: rotate(-8deg) translateY(0); }
+      50% { transform: rotate(-8deg) translateY(-3px); }
+    }
+    .btn-generate.loading .pen-icon { animation: writing 0.5s ease-in-out infinite; }
+
+    /* ---- BOOK VIEWER ---- */
+    .book-area { min-height: 500px; }
+    .book-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+    .book-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1rem;
+      color: rgba(255,255,255,0.7);
+    }
+    .page-counter {
+      font-size: 0.8rem;
+      color: var(--gold);
+      letter-spacing: 0.08em;
+    }
+
+    .pages-container { position: relative; }
+    .page-wrapper {
+      display: none;
+      animation: fadeIn 0.35s ease;
+    }
+    .page-wrapper.active { display: block; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
+
+    .page-frame {
+      background: var(--paper);
+      border-radius: 4px;
+      box-shadow:
+        0 0 0 1px rgba(0,0,0,0.15),
+        4px 4px 0 0 var(--paper-shadow),
+        8px 8px 0 0 rgba(0,0,0,0.08),
+        0 20px 60px rgba(0,0,0,0.5);
+      overflow: hidden;
+      position: relative;
+    }
+    .page-frame::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 40px;
+      background: linear-gradient(to right, rgba(0,0,0,0.08) 0%, transparent 100%);
+      pointer-events: none;
+      z-index: 1;
+    }
+    .page-frame img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    .page-nav {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      margin-top: 24px;
+    }
+    .nav-btn {
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 8px;
+      color: white;
+      padding: 10px 22px;
+      font-size: 0.88rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .nav-btn:hover:not(:disabled) { background: rgba(255,255,255,0.12); border-color: var(--gold); color: var(--gold); }
+    .nav-btn:disabled { opacity: 0.3; cursor: default; }
+
+    .page-dots { display: flex; gap: 6px; align-items: center; }
+    .dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.25);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .dot.active { background: var(--gold); transform: scale(1.3); }
+
+    .download-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(201,168,76,0.08);
+      border: 1px solid rgba(201,168,76,0.25);
+      border-radius: 10px;
+      padding: 12px 18px;
+      margin-top: 20px;
+    }
+    .download-info { font-size: 0.8rem; color: rgba(255,255,255,0.5); }
+    .download-btns { display: flex; gap: 10px; }
+    .btn-dl {
+      background: transparent;
+      border: 1px solid rgba(201,168,76,0.5);
+      border-radius: 7px;
+      color: var(--gold);
+      font-size: 0.8rem;
+      padding: 6px 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+      letter-spacing: 0.03em;
+    }
+    .btn-dl:hover { background: rgba(201,168,76,0.12); }
+
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 500px;
+      gap: 16px;
+      color: rgba(255,255,255,0.2);
+    }
+    .empty-icon { font-size: 4rem; opacity: 0.3; }
+    .empty-text { font-family: 'Playfair Display', serif; font-size: 1.2rem; }
+    .empty-sub { font-size: 0.85rem; opacity: 0.6; }
+
+    .progress-bar {
+      height: 3px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 2px;
+      margin-top: 14px;
+      overflow: hidden;
+      display: none;
+    }
+    .progress-bar.show { display: block; }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--navy-mid), var(--gold));
+      border-radius: 2px;
+      width: 0%;
+      transition: width 0.4s ease;
+    }
+
+    .kb-hint {
+      text-align: center;
+      margin-top: 12px;
+      font-size: 0.72rem;
+      color: rgba(255,255,255,0.2);
+      letter-spacing: 0.05em;
+    }
+    kbd {
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 4px;
+      padding: 1px 6px;
+      font-size: 0.7rem;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div>
+    <div class="logo">Hand<span>Script</span></div>
+    <div class="subtitle">MCS · NUST · CS-405 Deep Learning</div>
+  </div>
+  <div class="header-badge">GAN + EMNIST Engine</div>
+</header>
+
+<div class="main">
+
+  <div class="panel">
+    <div class="panel-title">Compose Your Text</div>
+
+    <label>Text content</label>
+    <textarea id="textInput" placeholder="Type anything here...&#10;&#10;Multi-line and paragraphs are supported.&#10;Each line break starts a new paragraph.">Dear Professor,
+This is my Deep Learning assignment for CS-405 at MCS NUST.
+The handwriting generation system is fully functional and produces A4 pages in navy blue ink.
+Respectfully submitted, Ahmed Talal Sajid.</textarea>
+
+    <div class="options-grid">
+      <div class="option-group">
+        <label>Ink colour</label>
+        <select id="inkColor">
+          <option value="navy">Navy Blue</option>
+          <option value="black">Black</option>
+          <option value="blue">Bright Blue</option>
+        </select>
+      </div>
+      <div class="option-group">
+        <label>Slant <span class="range-val" id="slantVal">0.10</span></label>
+        <input type="range" id="slantInput" min="0" max="0.3" step="0.01" value="0.10">
+      </div>
+    </div>
+
+    <div class="progress-bar" id="progressBar">
+      <div class="progress-fill" id="progressFill"></div>
+    </div>
+
+    <button class="btn-generate" id="generateBtn" onclick="generate()">
+      <span class="pen-icon">✒️</span>
+      Generate Handwriting
+    </button>
+  </div>
+
+  <div class="book-area">
+    <div class="book-header">
+      <div class="book-title" id="bookTitle">Your handwritten document will appear here</div>
+      <div class="page-counter" id="pageCounter"></div>
+    </div>
+
+    <div id="emptyState" class="empty-state">
+      <div class="empty-icon">📄</div>
+      <div class="empty-text">No pages yet</div>
+      <div class="empty-sub">Type your text and click Generate</div>
+    </div>
+
+    <div id="bookViewer" style="display:none;">
+      <div class="pages-container" id="pagesContainer"></div>
+
+      <div class="page-nav" id="pageNav">
+        <button class="nav-btn" id="prevBtn" onclick="changePage(-1)" disabled>← Previous</button>
+        <div class="page-dots" id="pageDots"></div>
+        <button class="nav-btn" id="nextBtn" onclick="changePage(1)" disabled>Next →</button>
+      </div>
+
+      <div class="kb-hint">Use <kbd>←</kbd> <kbd>→</kbd> arrow keys to navigate pages</div>
+
+      <div class="download-bar" id="downloadBar">
+        <div class="download-info" id="downloadInfo"></div>
+        <div class="download-btns">
+          <button class="btn-dl" onclick="downloadCurrentPage()">↓ This Page</button>
+          <button class="btn-dl" onclick="downloadAllPages()">↓ All Pages</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  let pages = [];
+  let currentPage = 0;
+
+  document.getElementById('slantInput').addEventListener('input', function() {
+    document.getElementById('slantVal').textContent = parseFloat(this.value).toFixed(2);
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.target.tagName === 'TEXTAREA') return;
+    if (e.key === 'ArrowRight') changePage(1);
+    if (e.key === 'ArrowLeft') changePage(-1);
+  });
+
+  async function generate() {
+    const text = document.getElementById('textInput').value.trim();
+    if (!text) return;
+
+    const btn = document.getElementById('generateBtn');
+    
+    // PREVENT DOUBLE CLICKING
+    if (btn.classList.contains('loading')) return;
+
+    const progressBar = document.getElementById('progressBar');
+    const progressFill = document.getElementById('progressFill');
+
+    btn.classList.add('loading');
+    btn.innerHTML = '<span class="pen-icon">✒️</span> Writing...';
+    progressBar.classList.add('show');
+    progressFill.style.width = '20%';
+
+    const slant = parseFloat(document.getElementById('slantInput').value);
+    const inkColor = document.getElementById('inkColor').value;
+
+    try {
+      progressFill.style.width = '50%';
+
+      const formData = new FormData();
+      formData.append('text', text);
+      formData.append('slant', slant);
+      formData.append('ink_color', inkColor);
+
+      const response = await fetch('/generate', { method: 'POST', body: formData });
+
+      if (!response.ok) throw new Error('Server error');
+
+      const data = await response.json();
+      const pageBlobs = data.pages.map(b64 => b64);
+
+      progressFill.style.width = '90%';
+
+      pages = pageBlobs;
+      currentPage = 0;
+      renderBook();
+
+      progressFill.style.width = '100%';
+      setTimeout(() => {
+        progressBar.classList.remove('show');
+        progressFill.style.width = '0%';
+      }, 600);
+
+    } catch (err) {
+      console.error(err);
+      alert('Generation failed. Is the Flask server running?');
+    } finally {
+      btn.classList.remove('loading');
+      btn.innerHTML = '<span class="pen-icon">✒️</span> Generate Handwriting';
+    }
+  }
+
+  function renderBook() {
+    const container = document.getElementById('pagesContainer');
+    const dots = document.getElementById('pageDots');
+    container.innerHTML = '';
+    dots.innerHTML = '';
+
+    pages.forEach((src, i) => {
+      const wrapper = document.createElement('div');
+      wrapper.className = 'page-wrapper' + (i === 0 ? ' active' : '');
+      wrapper.id = 'page-' + i;
+
+      const frame = document.createElement('div');
+      frame.className = 'page-frame';
+
+      const img = document.createElement('img');
+      img.src = src.startsWith('data:') ? src : 'data:image/png;base64,' + src;
+      img.alt = 'Page ' + (i + 1);
+
+      frame.appendChild(img);
+      wrapper.appendChild(frame);
+      container.appendChild(wrapper);
+
+      const dot = document.createElement('div');
+      dot.className = 'dot' + (i === 0 ? ' active' : '');
+      dot.onclick = () => goToPage(i);
+      dots.appendChild(dot);
+    });
+
+    document.getElementById('emptyState').style.display = 'none';
+    document.getElementById('bookViewer').style.display = 'block';
+
+    updateNav();
+    updateInfo();
+  }
+
+  function changePage(dir) {
+    const next = currentPage + dir;
+    if (next < 0 || next >= pages.length) return;
+    goToPage(next);
+  }
+
+  function goToPage(idx) {
+    document.getElementById('page-' + currentPage).classList.remove('active');
+    document.querySelectorAll('.dot')[currentPage].classList.remove('active');
+
+    currentPage = idx;
+
+    document.getElementById('page-' + currentPage).classList.add('active');
+    document.querySelectorAll('.dot')[currentPage].classList.add('active');
+
+    updateNav();
+    updateInfo();
+  }
+
+  function updateNav() {
+    document.getElementById('prevBtn').disabled = currentPage === 0;
+    document.getElementById('nextBtn').disabled = currentPage === pages.length - 1;
+    document.getElementById('pageCounter').textContent =
+      pages.length > 0 ? `Page ${currentPage + 1} of ${pages.length}` : '';
+    document.getElementById('bookTitle').textContent =
+      pages.length > 0 ? 'Handwritten Document' : 'Your handwritten document will appear here';
+  }
+
+  function updateInfo() {
+    document.getElementById('downloadInfo').textContent =
+      `${pages.length} page${pages.length !== 1 ? 's' : ''} generated  ·  A4 300 DPI  ·  PNG`;
+  }
+
+  function downloadCurrentPage() {
+    const src = pages[currentPage];
+    const a = document.createElement('a');
+    a.href = src.startsWith('data:') ? src : 'data:image/png;base64,' + src;
+    a.download = `handwriting_page_${currentPage + 1}.png`;
+    a.click();
+  }
+
+  function downloadAllPages() {
+    pages.forEach((src, i) => {
+      setTimeout(() => {
+        const a = document.createElement('a');
+        a.href = src.startsWith('data:') ? src : 'data:image/png;base64,' + src;
+        a.download = `handwriting_page_${i + 1}.png`;
+        a.click();
+      }, i * 300);
+    });
+  }
+</script>
+
+</body>
+</html>
